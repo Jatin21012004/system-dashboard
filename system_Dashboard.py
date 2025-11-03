@@ -1,5 +1,5 @@
 import csv
-import os 
+import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 import psutil
@@ -7,12 +7,13 @@ from datetime import datetime
 
 app = FastAPI()
 
-LOG_FILE="system_metrics.csv"
+LOG_FILE = "system_metrics.csv"
 
+# Create CSV header if not exists
 if not os.path.exists(LOG_FILE):
-    with open(LOG_FILE, mode="w",newline="",encoding="utf-8") as f:
-        writer=csv.writer(f)
-        writer.writerow(["Timestamp","CPU%","MEMORY%", "DISK%"])
+    with open(LOG_FILE, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Timestamp", "CPU%", "MEMORY%", "DISK%"])
 
 
 @app.get("/")
@@ -101,20 +102,22 @@ def dashboard():
     </html>
     """)
 
+
 @app.get("/stats")
 def get_stats():
-        cpu=psutil.cpu_percent(interval=0.5),
-        memory=psutil.virtual_memory().percent,
-        disk=psutil.disk_usage('/').percent,
-        Timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        with open(LOG_FILE, mode="a", newline="", encoding="utf-8")as f:
-            writer=csv.writer(f)
-            writer.writerow([Timestamp,cpu,memory,disk])
-            
-        return JSONResponse({
-             "cpu":cpu,
-             "memory":memory,
-             "disk":disk,
-             "time":Timestamp
- })
+    cpu = psutil.cpu_percent(interval=0.5)
+    memory = psutil.virtual_memory().percent
+    disk = psutil.disk_usage('/').percent
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Save to CSV
+    with open(LOG_FILE, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([timestamp, cpu, memory, disk])
+
+    return JSONResponse({
+        "cpu": cpu,
+        "memory": memory,
+        "disk": disk,
+        "time": timestamp
+    })
